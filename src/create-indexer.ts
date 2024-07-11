@@ -13,7 +13,10 @@ export function createIndexer(
     database,
     services,
     getSchema,
-  }: Parameters<Parameters<typeof defineHook>[0]>[1]
+  }: Pick<
+    Parameters<Parameters<typeof defineHook>[0]>[1],
+    "logger" | "database" | "services" | "getSchema"
+  >
 ) {
   if (!config.server.type || !availableIndexers[config.server.type]) {
     throw Error(
