@@ -1,11 +1,15 @@
-import { defineHook } from '@directus/extensions-sdk';
+import { defineHook } from "@directus/extensions-sdk";
+import { loadConfig, validateConfig } from "./config";
 
-export default defineHook(({ filter, action }) => {
-	filter('items.create', () => {
-		console.log('Creating Item!');
-	});
+export default defineHook(({ filter, action }, { env }) => {
+  const extensionConfig = loadConfig(env);
+  validateConfig(extensionConfig);
 
-	action('items.create', () => {
-		console.log('Item created!');
-	});
+  filter("items.create", () => {
+    console.log("Creating Item!");
+  });
+
+  action("items.create", () => {
+    console.log("Item created!");
+  });
 });

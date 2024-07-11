@@ -27,5 +27,8 @@
 		"@directus/extensions-sdk": "11.0.9",
 		"@types/node": "^20.14.10",
 		"typescript": "^5.5.3"
+	},
+	"dependencies": {
+		"cosmiconfig": "^9.0.0"
 	}
 }
