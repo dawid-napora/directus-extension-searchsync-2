@@ -29,6 +29,8 @@
 		"typescript": "^5.5.3"
 	},
 	"dependencies": {
-		"cosmiconfig": "^9.0.0"
+		"cosmiconfig": "^9.0.0",
+		"meilisearch": "^0.41.0",
+		"striptags": "^3.2.0"
 	}
 }
