@@ -1,7 +1,13 @@
 {
 	"name": "directus-extension-searchsync-2",
-	"description": "Please enter a description for your extension",
+	"description": "Simple Directus extension that sync content with remote search engine (eg. Meilisearch, ElasticSearch, Algolia).",
 	"icon": "extension",
+	"license": "MIT",
+	"author": {
+		"email": "dawid@napora.dev",
+		"name": "Dawid Napora",
+		"url": "https://napora.dev"
+	},
 	"version": "1.0.0",
 	"keywords": [
 		"directus",
