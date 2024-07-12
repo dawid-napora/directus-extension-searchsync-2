@@ -1,4 +1,4 @@
-import type { Filter } from "@directus/types";
+import type { Filter, NestedDeepQuery } from "@directus/types";
 
 export type ExtensionConfig = {
   server: IndexerConfig;
@@ -13,6 +13,7 @@ export type CollectionConfig = {
   indexName?: string;
   fields?: string[];
   filter?: Filter;
+  deep?: NestedDeepQuery;
   transform?: (
     input: Record<string, any>,
     utils: Record<string, Function>,

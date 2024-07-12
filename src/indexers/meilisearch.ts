@@ -28,7 +28,7 @@ export const meilisearch: IndexerInterface = (config) => {
   const deleteItems = async (collection: string) => {
     await client
       .index(collection)
-      .delete()
+      .deleteAllDocuments()
       .catch((error) => {
         if (error.response && error.response.status === 404) return;
         throw error;

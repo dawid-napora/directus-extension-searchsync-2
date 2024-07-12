@@ -70,6 +70,7 @@ export function createIndexer(
       const items = await query.readByQuery({
         fields: [pk],
         filter: config.collections[collection]?.filter || [],
+        deep: config.collections[collection]?.deep || {},
         limit,
         offset,
       });
