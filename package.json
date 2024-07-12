@@ -8,6 +8,10 @@
 		"name": "Dawid Napora",
 		"url": "https://napora.dev"
 	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/dawid-napora/directus-extension-searchsync-2.git"
+	},
 	"version": "1.0.0",
 	"keywords": [
 		"directus",
