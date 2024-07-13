@@ -8,6 +8,100 @@ Inspired by the [dimitrov-adrian/directus-extension-searchsync](https://github.c
 - 🚧 ElasticSearch (coming soon)
 - 🚧 Algolia (coming soon)
 
+## How to install
+
+### Installing via the Directus Marketplace
+
+1. Search for `Searchsync 2` extension in Directus Marketplace
+2. Click `Install Extension`
+3. [Configure the extension](#configuration)
+
+### Installing via the npm Registry
+
+#### 1. Modify docker-compose.yml
+
+Open the `docker-compose.yml` file of your project and replace the `image` option with a `build` section:
+
+```diff
+- image: directus/directus:10.x.y
++ build:
++   context: ./
+```
+
+#### 2. Create a Dockerfile
+
+At the root of your project, create a `Dockerfile` if one doesn't already exist and add the following:
+
+```Dockerfile
+FROM directus/directus:10.x.y
+
+USER root
+RUN corepack enable
+USER node
+
+RUN pnpm install directus-extension-searchsync-2
+```
+
+#### 3. Build the Docker Image
+
+Build your Docker image:
+
+```bash
+docker compose build
+```
+
+#### 4. Start the Docker Container
+
+Start your Docker container:
+
+```bash
+docker compose up
+```
+
+On startup, you'd see that Directus will automatically load the extension installed in the previous steps.
+
+### Installing via the Extensions Directory
+
+#### 1. Create an Extensions Folder
+
+At the root of your project, create an `extensions` folder if one doesn't already exist to house the extensions.
+
+#### 2. Clone the extension into the extensions folder
+
+Clone the extension repository from GitHub to the `extensions` folder in your project.
+
+```bash
+cd extensions
+git clone https://github.com/dawid-napora/directus-extension-searchsync-2.git
+```
+
+Your folder structure should look like this:
+
+```
+extensions/
+  directus-extension-searchsync-2/
+    dist/
+      index.js
+    package.json
+    ...
+  ...
+```
+
+#### 3. Update Docker Compose File
+
+Open your `docker-compose.yml` file and add a volume to mount your extensions folder into the Docker container:
+
+```yaml
+volumes:
+  - ./extensions:/directus/extensions/
+```
+
+#### 4. Start the Docker Container
+
+```bash
+docker compose up
+```
+
 ## CLI Commands
 
 Usage: `npx directus extension:searchsync <subdommand>`
