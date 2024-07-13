@@ -92,6 +92,7 @@ extensions/
 To build the extension you need to install dependencies and then run the `build` script:
 
 ```bash
+cd directus-extension-searchsync-2
 npm install
 npm run build
 ```
