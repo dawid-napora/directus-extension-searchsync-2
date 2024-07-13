@@ -87,7 +87,16 @@ extensions/
   ...
 ```
 
-#### 3. Update Docker Compose File
+#### 3. Build the extension
+
+To build the extension you need to install dependencies and then run the `build` script:
+
+```bash
+npm install
+npm run build
+```
+
+#### 4. Update Docker Compose File
 
 Open your `docker-compose.yml` file and add a volume to mount your extensions folder into the Docker container:
 
@@ -96,7 +105,7 @@ volumes:
   - ./extensions:/directus/extensions/
 ```
 
-#### 4. Start the Docker Container
+#### 5. Start the Docker Container
 
 ```bash
 docker compose up
