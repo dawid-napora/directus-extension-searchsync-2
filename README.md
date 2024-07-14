@@ -1,36 +1,39 @@
-# Simple search engine indexer
+# Simple Search Engine Indexer
 
-Inspired by the [dimitrov-adrian/directus-extension-searchsync](https://github.com/dimitrov-adrian/directus-extension-searchsync), rewritten in TypeScript, supporting Directus 10.
+Inspired by the [dimitrov-adrian/directus-extension-searchsync](https://github.com/dimitrov-adrian/directus-extension-searchsync), rewritten in TypeScript, and supporting Directus 10.
 
-## Supported engines
+## Supported Engines
 
 - ✅ MeiliSearch
 - 🚧 ElasticSearch (coming soon)
 - 🚧 Algolia (coming soon)
 
-## How to install
+## Installation
 
-### Installing via the Directus Marketplace
+### Via Directus Marketplace
 
-1. Search for `Searchsync 2` extension in Directus Marketplace
-2. Click `Install Extension`
-3. [Configure the extension](#configuration)
+1. Search for `Searchsync 2` extension in Directus Marketplace.
+2. Click `Install Extension`.
+3. [Configure the extension](#configuration).
 
-### Installing via the npm Registry
+### Via npm Registry
 
-#### 1. Modify docker-compose.yml
+#### Step 1: Modify docker-compose.yml
 
 Open the `docker-compose.yml` file of your project and replace the `image` option with a `build` section:
 
-```diff
-- image: directus/directus:10.x.y
-+ build:
-+   context: ./
+```yaml
+# Before
+image: directus/directus:10.x.y
+
+# After
+build:
+  context: ./
 ```
 
-#### 2. Create a Dockerfile
+#### Step 2: Create a Dockerfile
 
-At the root of your project, create a `Dockerfile` if one doesn't already exist and add the following:
+At the root of your project, create a `Dockerfile` if one doesn't already exist, and add the following:
 
 ```Dockerfile
 FROM directus/directus:10.x.y
@@ -42,33 +45,27 @@ USER node
 RUN pnpm install directus-extension-searchsync-2
 ```
 
-#### 3. Build the Docker Image
-
-Build your Docker image:
+#### Step 3: Build the Docker Image
 
 ```bash
 docker compose build
 ```
 
-#### 4. Start the Docker Container
-
-Start your Docker container:
+#### Step 4: Start the Docker Container
 
 ```bash
 docker compose up
 ```
 
-On startup, you'd see that Directus will automatically load the extension installed in the previous steps.
+Directus will automatically load the extension installed in the previous steps.
 
-### Installing via the Extensions Directory
+### Via Extensions Directory
 
-#### 1. Create an Extensions Folder
+#### Step 1: Create an Extensions Folder
 
-At the root of your project, create an `extensions` folder if one doesn't already exist to house the extensions.
+At the root of your project, create an `extensions` folder if it doesn't already exist to house the extensions.
 
-#### 2. Clone the extension into the extensions folder
-
-Clone the extension repository from GitHub to the `extensions` folder in your project.
+#### Step 2: Clone the Extension into the Extensions Folder
 
 ```bash
 cd extensions
@@ -84,12 +81,11 @@ extensions/
       index.js
     package.json
     ...
-  ...
 ```
 
-#### 3. Build the extension
+#### Step 3: Build the Extension
 
-To build the extension you need to install dependencies and then run the `build` script:
+To build the extension, install dependencies and then run the `build` script:
 
 ```bash
 cd directus-extension-searchsync-2
@@ -97,7 +93,7 @@ npm install
 npm run build
 ```
 
-#### 4. Update Docker Compose File
+#### Step 4: Update Docker Compose File
 
 Open your `docker-compose.yml` file and add a volume to mount your extensions folder into the Docker container:
 
@@ -106,7 +102,7 @@ volumes:
   - ./extensions:/directus/extensions/
 ```
 
-#### 5. Start the Docker Container
+#### Step 5: Start the Docker Container
 
 ```bash
 docker compose up
@@ -114,45 +110,41 @@ docker compose up
 
 ## CLI Commands
 
-Usage: `npx directus extension:searchsync <subdommand>`
+Usage: `npx directus extension:searchsync <subcommand>`
 
 Subcommands:
 
-- `index` - Reindex all documents from configuration
+- `index` - Reindex all documents from the configuration.
 
 ## Configuration
 
-The extension uses [cosmiconfig](https://github.com/davidtheclark/cosmiconfig#cosmiconfig) for configuration loader with
-`searchsync` block or if `EXTENSION_SEARCHSYNC_CONFIG_PATH` is set will try to use the file.
+The extension uses [cosmiconfig](https://github.com/davidtheclark/cosmiconfig#cosmiconfig) for configuration loading with a `searchsync` block, or if `EXTENSION_SEARCHSYNC_CONFIG_PATH` is set, it will use the specified file.
 
-So, configuration should comes from one of next files:
+Configuration can come from one of the following files:
 
-- package.json `"searchsync":{...}`
-- .searchsyncrc
-- .searchsyncrc.json
-- .searchsyncrc.yaml
-- .searchsyncrc.yml
-- .searchsyncrc.js
-- .searchsyncrc.cjs
-- searchsync.config.js
-- searchsync.config.cjs
+- `package.json` `"searchsync": {...}`
+- `.searchsyncrc`
+- `.searchsyncrc.json`
+- `.searchsyncrc.yaml`
+- `.searchsyncrc.yml`
+- `.searchsyncrc.js`
+- `.searchsyncrc.cjs`
+- `searchsync.config.js`
+- `searchsync.config.cjs`
 
-### Environment variables
+### Environment Variables
 
-### References
+### Configuration References
 
-- `server: object` Holds configuration for the search engine
-- `batchLimit: number` Batch limit when performing index/reindex (defaults to 100)
-- `reindexOnStart: boolean` Performs full reindex of all documents upon Directus starts
-- `collections: object` Indexing data definition
-- `collections.<collection>.filter: object` The filter query in format like Directus on which item must match to be
-  indexed (check [Filter Rules ](https://docs.directus.io/reference/filter-rules/#filter-rules))
-- `collections.<collection>.fields: array<string>` Fields that will be indexed in Directus format
-- `collections.<collection>.transform: function` (Could be defined only if config file is .js) A callback to return
-  transformed/formatted data for indexing.
-- `collections.<collection>.indexName: string` Force collection name when storing in search index
-- `collections.<collection>.collectionField: string` If set, such field with value of the collection name will be added
-  to the indexed document. Useful with conjuction with the _indexName_ option
+- `server: object` - Holds configuration for the search engine.
+- `batchLimit: number` - Batch limit when performing index/reindex (defaults to 100).
+- `reindexOnStart: boolean` - Performs a full reindex of all documents upon Directus startup.
+- `collections: object` - Indexing data definition.
+- `collections.<collection>.filter: object` - The filter query in the Directus format to determine which items must be indexed (see [Filter Rules](https://docs.directus.io/reference/filter-rules/#filter-rules)).
+- `collections.<collection>.fields: array<string>` - Fields that will be indexed in Directus format.
+- `collections.<collection>.transform: function` - A callback to return transformed/formatted data for indexing (can only be defined if the config file is `.js`).
+- `collections.<collection>.indexName: string` - Override collection name when storing in the search index.
+- `collections.<collection>.collectionField: string` - If set, adds a field with the collection name value to the indexed document. Useful in conjunction with the `indexName` option.
 
 ### Examples
 
@@ -187,7 +179,6 @@ So, configuration should comes from one of next files:
     "posts": {
       "indexName": "blog_posts",
       "collectionField": "_collection",
-
       "filter": {
         "status": "published"
       },
@@ -214,22 +205,19 @@ const config = {
         status: "published",
       },
       fields: ["title", "teaser", "body", "thumbnail.id"],
-      transform: (item, { flattenObject, striptags }) => {
-        return {
-          ...flattenObject(item),
-          body: striptags(item.body),
-          someCustomValue: "Hello World!",
-        };
-      },
+      transform: (item, { flattenObject, striptags }) => ({
+        ...flattenObject(item),
+        body: striptags(item.body),
+        someCustomValue: "Hello World!",
+      }),
     },
   },
 };
 
-// Use as object.
 module.exports = config;
 ```
 
-##### Collection transformation callback description
+##### Collection Transformation Callback Description
 
 ```javascript
 /**
@@ -239,11 +227,11 @@ module.exports = config;
  * @returns {Object}
  */
 function (item, { striptags, flattenObject, objectMap }, collectionName) {
-	return item
+  return item;
 }
 ```
 
-#### Search engines config references
+#### Search Engines Configuration References
 
 ##### Meilisearch
 
@@ -267,7 +255,7 @@ function (item, { striptags, flattenObject, objectMap }, collectionName) {
 
 ##### ElasticSearch (coming soon)
 
-New typeless behaviour, use collection names as index name.
+New typeless behavior, use collection names as the index name.
 
 ```json
 {
@@ -276,7 +264,7 @@ New typeless behaviour, use collection names as index name.
 }
 ```
 
-Use Authentification.
+With authentication:
 
 ```json
 {
@@ -287,7 +275,7 @@ Use Authentification.
 }
 ```
 
-Ignore ssl-certificate-error.
+Ignore SSL certificate error:
 
 ```json
 {
@@ -299,7 +287,7 @@ Ignore ssl-certificate-error.
 
 ##### ElasticSearch for 5.x and 6.x (coming soon)
 
-Old type behaviour, use collection names as types.
+Old type behavior, use collection names as types.
 
 ```json
 {
