@@ -3,14 +3,12 @@ import type { Filter, NestedDeepQuery } from "@directus/types";
 export type ExtensionConfig = {
   server: IndexerConfig;
   batchLimit?: number;
-  collections: Record<string, CollectionConfig>;
+  indexes: Record<string, IndexConfig>;
 };
 
-export type CollectionConfig = {
-  collection?: string;
-  collectionName?: string;
+export type IndexConfig = {
+  collectionName: string;
   collectionField?: string;
-  indexName?: string;
   fields?: string[];
   filter?: Filter;
   deep?: NestedDeepQuery;
