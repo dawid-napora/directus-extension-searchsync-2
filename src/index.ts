@@ -1,6 +1,11 @@
 import { defineHook } from "@directus/extensions-sdk";
 import { loadConfig, validateConfig } from "./config";
 import { createIndexer } from "./create-indexer";
+import { filterObject } from "./utils";
+
+const getIndexesFromCollection = (config: ExtensionConfig, collectionName: string) => {
+  return filterObject( config.indexes,  (n) => n.collectionName === collectionName )
+}
 
 export default defineHook(
   ({ action, init }, { env, logger, database, services, getSchema }) => {
@@ -31,18 +36,30 @@ export default defineHook(
     });
 
     action("items.create", ({ collection, key }) => {
-      if (!extensionConfig.collections.hasOwnProperty(collection)) return;
-      indexer.updateItemIndex(collection, [key]);
+      const indexes = getIndexesFromCollection(extensionConfig, collection)
+      if (!indexes) return;
+
+      for (const indexKey in indexes) {
+        indexer.updateItemIndex(indexKey, [key]);
+      }
     });
 
     action("items.update", ({ collection, keys }) => {
-      if (!extensionConfig.collections.hasOwnProperty(collection)) return;
-      indexer.updateItemIndex(collection, keys);
+      const indexes = getIndexesFromCollection(extensionConfig, collection)
+      if (!indexes) return;
+
+      for (const indexKey in indexes) {
+        indexer.updateItemIndex(indexKey, keys);
+      }
     });
 
     action("items.delete", ({ collection, payload }) => {
-      if (!extensionConfig.collections.hasOwnProperty(collection)) return;
-      indexer.deleteItemIndex(collection, payload);
+      const indexes = getIndexesFromCollection(extensionConfig, collection)
+      if (!indexes) return;
+
+      for (const indexKey in indexes) {
+        indexer.deleteItemIndex(indexKey, payload);
+      }
     });
 
     const initCollectionIndexesCommand = async () => {

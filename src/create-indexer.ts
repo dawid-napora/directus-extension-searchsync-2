@@ -28,25 +28,25 @@ export function createIndexer(
 
   const indexer = availableIndexers[config.server.type]!(config.server);
 
-  const ensureCollectionIndex = async (collection: string) => {
-    const collectionIndex = getCollectionIndexName(collection);
-    await indexer.createIndex(collectionIndex).catch((error) => {
+  const ensureCollectionIndex = async (indexName: string) => {
+    await indexer.createIndex(indexName).catch((error) => {
       const message = getErrorMessage(error);
-      logger.warn(`Cannot create collection "${collectionIndex}". ${message}`);
+      logger.warn(`Cannot create collection "${indexName}". ${message}`);
       logger.debug(error);
     });
   };
 
   const initCollectionIndexes = async () => {
-    for (const collection of Object.keys(config.collections)) {
-      await ensureCollectionIndex(collection);
-      await initItemsIndex(collection);
+    for (const indexName of Object.keys(config.indexes)) {
+      await ensureCollectionIndex(indexName);
+      await initItemsIndex(indexName);
     }
   };
 
-  const initItemsIndex = async (collection: string) => {
+  const initItemsIndex = async (indexName: string) => {
     const schema = await getSchema();
 
+    const collection = config.indexes[indexName].collectionName
     if (!schema.collections[collection]) {
       logger.warn(`Collection "${collection}" does not exists.`);
       return;
@@ -55,7 +55,7 @@ export function createIndexer(
     const query = new services.ItemsService(collection, { database, schema });
 
     await indexer
-      .deleteItems(getCollectionIndexName(collection))
+      .deleteItems(indexName)
       .catch((error) => {
         logger.warn(
           `Cannot drop collection "${collection}". ${getErrorMessage(error)}`
@@ -63,14 +63,14 @@ export function createIndexer(
         logger.debug(error);
       });
 
-    const pk = schema.collections[collection].primary;
+    const primaryKey = schema.collections[collection].primary;
     const limit = config.batchLimit || 100;
 
     for (let offset = 0; ; offset += limit) {
       const items = await query.readByQuery({
-        fields: [pk],
-        filter: config.collections[collection]?.filter || [],
-        deep: config.collections[collection]?.deep || {},
+        fields: [primaryKey],
+        filter: config.indexes[indexName]?.filter || [],
+        deep: config.indexes[indexName]?.deep || {},
         limit,
         offset,
       });
@@ -78,56 +78,56 @@ export function createIndexer(
       if (!items || !items.length) break;
 
       await updateItemIndex(
-        collection,
-        items.map((i: Record<string, any>) => i[pk])
+        indexName,
+        items.map((i: Record<string, any>) => i[primaryKey])
       );
     }
   };
 
-  const deleteItemIndex = async (collection: string, ids: string[]) => {
-    const collectionIndex = getCollectionIndexName(collection);
+  const deleteItemIndex = async (indexName: string, ids: string[]) => {
     for (const id of ids) {
-      await indexer.deleteItem(collectionIndex, id).catch((error) => {
+      await indexer.deleteItem(indexName, id).catch((error) => {
         logger.warn(
-          `Cannot delete "${collectionIndex}/${id}". ${getErrorMessage(error)}`
+          `Cannot delete "${indexName}/${id}". ${getErrorMessage(error)}`
         );
         logger.debug(error);
       });
     }
   };
 
-  const updateItemIndex = async (collection: string, ids: string[]) => {
+  const updateItemIndex = async (indexName: string, ids: string[]) => {
     const schema = await getSchema();
 
-    const collectionIndex = getCollectionIndexName(collection);
+    const index = config.indexes[indexName]
+    const collection = index.collectionName
 
     const query = new services.ItemsService(collection, {
       knex: database,
       schema: schema,
     });
 
-    const pk = schema.collections[collection]?.primary || "id";
+    const primaryKey = schema.collections[collection]?.primary || "id";
 
     const items = await query.readMany(ids, {
-      fields: config.collections[collection]?.fields
-        ? [pk, ...config.collections[collection].fields]
+      fields: index?.fields
+        ? [primaryKey, ...index.fields]
         : ["*"],
-      filter: config.collections[collection]?.filter || [],
+      filter: index?.filter || [],
     });
 
     const processedIds: string[] = [];
 
     for (const item of items) {
-      const id = item[pk];
+      const id = item[primaryKey];
 
       await indexer
-        .updateItem(collectionIndex, id, prepareObject(item, collection), pk)
+        .updateItem(indexName, id, prepareObject(item, indexName), primaryKey)
         .then(() => {
           processedIds.push(id);
         })
         .catch((error) => {
           logger.warn(
-            `Cannot index "${collectionIndex}/${id}". ${getErrorMessage(error)}`
+            `Cannot index "${indexName}/${id}". ${getErrorMessage(error)}`
           );
           logger.debug(error);
         });
@@ -135,9 +135,9 @@ export function createIndexer(
 
     if (items.length < ids.length) {
       for (const id of ids.filter((x) => !processedIds.includes(x))) {
-        await indexer.deleteItem(collectionIndex, id).catch((error) => {
+        await indexer.deleteItem(indexName, id).catch((error) => {
           logger.warn(
-            `Cannot index "${collectionIndex}/${id}". ${getErrorMessage(error)}`
+            `Cannot index "${indexName}/${id}". ${getErrorMessage(error)}`
           );
           logger.debug(error);
         });
@@ -145,16 +145,16 @@ export function createIndexer(
     }
   };
 
-  const prepareObject = (body: Record<string, any>, collection: string) => {
+  const prepareObject = (body: Record<string, any>, indexName: string) => {
     const meta: Record<string, string> = {};
 
-    if (config.collections[collection]?.collectionField) {
-      meta[config.collections[collection].collectionField] = collection;
+    if (config.indexes[indexName]?.collectionField) {
+      meta[config.indexes[indexName].collectionField] = config.indexes[indexName].collectionName;
     }
 
-    if (config.collections[collection]?.transform) {
+    if (config.indexes[indexName]?.transform) {
       return {
-        ...config.collections[collection].transform(
+        ...config.indexes[indexName].transform(
           body,
           {
             striptags,
@@ -162,15 +162,15 @@ export function createIndexer(
             objectMap,
             filteredObject,
           },
-          collection
+          indexName
         ),
         ...meta,
       };
-    } else if (config.collections[collection]?.fields) {
+    } else if (config.indexes[indexName]?.fields) {
       return {
         ...filteredObject(
           flattenObject(body),
-          config.collections[collection].fields
+          config.indexes[indexName].fields
         ),
         ...meta,
       };
@@ -180,10 +180,6 @@ export function createIndexer(
       ...body,
       ...meta,
     };
-  };
-
-  const getCollectionIndexName = (collection: string) => {
-    return config.collections[collection]?.indexName || collection;
   };
 
   const getErrorMessage = (error: any) => {
@@ -207,7 +203,5 @@ export function createIndexer(
     initItemsIndex,
     updateItemIndex,
     deleteItemIndex,
-
-    getCollectionIndexName,
   };
 }

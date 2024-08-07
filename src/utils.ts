@@ -55,3 +55,20 @@ export const filteredObject = (
       };
     }, {});
 };
+
+/*
+  Same behaviour as Array.filter() but for Objects
+  usage:
+  const filtered = filterObject(rawObject, n => n.somethingToCheck === true )
+*/
+export const filterObject = ( obj: Record<string, any>, predicate: Function) => {
+  let result = {};
+
+  for (const key in obj) {
+      if (obj.hasOwnProperty(key) && predicate(obj[key])) {
+          result[key] = obj[key];
+      }
+  }
+
+  return result;
+};
